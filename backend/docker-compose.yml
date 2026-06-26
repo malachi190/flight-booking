@@ -1,0 +1,82 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: flight_api
+    env_file:
+      - .env
+    environment:
+      PORT: 8080
+      ENV: development
+      DATABASE_URL: postgres://admin:1234@postgres:5432/flightbooking?sslmode=disable
+      REDIS_URL: redis:6379
+      REDIS_PASSWORD:
+      RABBITMQ_URL: amqp://admin:1234@rabbitmq:5672/
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: ["air"]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: flight_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: flightbooking
+    ports:
+      - "5433:5432"    # Host 5433 -> Container 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d flightbooking"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: flight_redis
+    ports:
+      - "6380:6379"    # Host 6380 -> Container 6379
+    command: redis-server --notify-keyspace-events Ex
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: flight_rabbitmq
+    ports:
+      - "5673:5672"    # Host 5673 -> Container 5672
+      - "15673:15672"  # Host 15673 -> Container 15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
