@@ -38,6 +38,10 @@ tasks:
     desc: "Create a new migration: task migrate-create -- migration_name"
     cmds:
       - goose -dir internal/db/migrations create {{.CLI_ARGS}} sql
+      
+  seed:
+    cmds:
+      - docker exec flight_api go run cmd/seed/main.go
 
   sqlc:
     cmds:

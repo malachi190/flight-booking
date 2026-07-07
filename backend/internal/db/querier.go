@@ -11,15 +11,29 @@ import (
 )
 
 type Querier interface {
+	CancelBooking(ctx context.Context, arg CancelBookingParams) (int64, error)
 	ClearUserRefreshToken(ctx context.Context, id pgtype.UUID) error
+	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
+	CreateBookingFlight(ctx context.Context, arg CreateBookingFlightParams) (CreateBookingFlightRow, error)
 	CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error)
+	CreatePassenger(ctx context.Context, arg CreatePassengerParams) (Passenger, error)
+	CreatePassengerSeat(ctx context.Context, arg CreatePassengerSeatParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetAvailableSeatsByFlight(ctx context.Context, flightID pgtype.UUID) ([]GetAvailableSeatsByFlightRow, error)
+	GetBookingByID(ctx context.Context, id pgtype.UUID) (GetBookingByIDRow, error)
+	GetBookingPassengers(ctx context.Context, bookingID pgtype.UUID) ([]GetBookingPassengersRow, error)
+	GetCabinClassByID(ctx context.Context, id pgtype.UUID) (GetCabinClassByIDRow, error)
 	GetFlightByID(ctx context.Context, id pgtype.UUID) (Flight, error)
+	GetFlightCabinClasses(ctx context.Context, flightID pgtype.UUID) ([]GetFlightCabinClassesRow, error)
+	GetFlightSeats(ctx context.Context, flightID pgtype.UUID) ([]GetFlightSeatsRow, error)
+	GetSeatByIDForUpdate(ctx context.Context, id pgtype.UUID) (GetSeatByIDForUpdateRow, error)
 	GetSeatsByFlight(ctx context.Context, flightID pgtype.UUID) ([]GetSeatsByFlightRow, error)
+	GetUserBookings(ctx context.Context, userID pgtype.UUID) ([]GetUserBookingsRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	ListFlightsByRoute(ctx context.Context, arg ListFlightsByRouteParams) ([]Flight, error)
+	ReleaseSeats(ctx context.Context, bookingID pgtype.UUID) error
+	SearchFlights(ctx context.Context, arg SearchFlightsParams) ([]SearchFlightsRow, error)
 	UpdateSeatStatus(ctx context.Context, arg UpdateSeatStatusParams) error
 	UpdateUserRefreshToken(ctx context.Context, arg UpdateUserRefreshTokenParams) error
 }

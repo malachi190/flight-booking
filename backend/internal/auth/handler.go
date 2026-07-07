@@ -27,6 +27,13 @@ func NewAuthHandler(queries *db.Queries, jwt *JwtService) *AuthHandler {
 	}
 }
 
+func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
+	r.POST("/signup", h.SignUp)
+	r.POST("/login", h.Login)
+	r.POST("/refresh", h.Refresh)
+	r.Use(h.AuthMiddleware()).POST("/logout", h.Logout)
+}
+
 func (h *AuthHandler) SignUp(ctx *gin.Context) {
 	var req dtos.SignUpRequest
 

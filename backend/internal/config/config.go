@@ -17,6 +17,7 @@ type Config struct {
 	DatabaseURL         string        `koanf:"database_url"`
 	RedisURL            string        `koanf:"redis_url"`
 	RedisPassword       string        `koanf:"redis_password"`
+	RedisDB             int           `koanf:"redis_db"`
 	RabbitMQURL         string        `koanf:"rabbitmq_url"`
 	JWTSecret           string        `koanf:"jwt_secret"`
 	JWTRefreshSecret    string        `koanf:"jwt_refresh_secret"`
@@ -40,6 +41,7 @@ func Load() *Config {
 		Env:              "development",
 		RedisURL:         "redis:6379",
 		RedisPassword:    "",
+		RedisDB:          0,
 		JWTAccessExpiry:  15 * time.Minute,
 		JWTRefreshExpiry: 7 * 24 * time.Hour, // 168h
 		FrontendURL:      "http://localhost:3000",

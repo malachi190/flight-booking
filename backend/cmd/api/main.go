@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/malachi190/flights/internal/cache"
 	"github.com/malachi190/flights/internal/config"
 	"github.com/malachi190/flights/internal/logger"
 	"github.com/malachi190/flights/internal/server"
@@ -36,7 +37,16 @@ func main() {
 
 	logger.Log.Info().Msg("Database connected")
 
-	srv := server.New(cfg, db)
+	// Initialize Redis cache
+	client := cache.New(cfg.RedisURL, cfg.RedisPassword, cfg.RedisDB)
+
+	if err := client.Ping(ctx); err != nil {
+		logger.Log.Fatal().Err(err).Msg("failed to ping redis")
+	}
+
+	logger.Log.Info().Msg("Redis connected")
+
+	srv := server.New(cfg, db, client)
 
 	// Graceful shutdown handling
 	quit := make(chan os.Signal, 1)

@@ -8,8 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/malachi190/flights/internal/auth"
+	"github.com/malachi190/flights/internal/bookings"
+	"github.com/malachi190/flights/internal/cache"
 	"github.com/malachi190/flights/internal/config"
 	"github.com/malachi190/flights/internal/db"
+	"github.com/malachi190/flights/internal/flights"
 	"github.com/malachi190/flights/internal/logger"
 )
 
@@ -19,7 +22,7 @@ type Server struct {
 	DB     *pgxpool.Pool
 }
 
-func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
+func New(cfg *config.Config, pool *pgxpool.Pool, cache *cache.Client) *Server {
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -44,24 +47,32 @@ func New(cfg *config.Config, pool *pgxpool.Pool) *Server {
 
 	queries := db.New(pool)
 	jwtService := auth.NewJwtService(cfg)
-	authHandler := auth.NewAuthHandler(queries, jwtService)
 
 	// Health check
 	r.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "ok", "env": cfg.Env})
 	})
 
-	// Auth endpoints
-	r.POST("/auth/signup", authHandler.SignUp)
-	r.POST("/auth/login", authHandler.Login)
-	r.POST("/auth/refresh", authHandler.Refresh)
+	// Auth
+	api := r.Group("/api")
+	authHandler := auth.NewAuthHandler(queries, jwtService)
+	{
+		authHandler.RegisterRoutes(api.Group("/auth"))
+	}
 
-	// Protected routes
-	authorized := r.Group("/")
-	authorized.Use(authHandler.AuthMiddleware())
+	// Flights
+	flightService := flights.NewService(queries, cache)
+	flightHandler := flights.NewFlightHandler(flightService)
+	{
+		flightHandler.RegisterRoutes(api.Group("/flights"), authHandler)
+	}
+
+	// Bookings
+	bookingService := bookings.NewBookingService(pool, queries)
+	bookingHandler := bookings.NewBookingHandler(bookingService)
 
 	{
-		authorized.POST("/auth/logout", authHandler.Logout)
+		bookingHandler.RegisterRoutes(api.Group("/bookings"), authHandler)
 	}
 
 	return &Server{
