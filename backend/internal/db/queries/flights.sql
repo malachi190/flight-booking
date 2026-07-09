@@ -4,7 +4,17 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
 
 -- name: GetFlightByID :one
-SELECT * FROM flights
+SELECT 
+    id,
+    flight_number,
+    airline_code,
+    airline_name,
+    departure_airport,
+    arrival_airport,
+    departure_time,
+    arrival_time,
+    duration
+FROM flights
 WHERE id = $1 LIMIT 1;
 
 -- name: ListFlightsByRoute :many
@@ -53,3 +63,4 @@ FROM seats s
 JOIN cabin_classes cc ON s.cabin_class_id = cc.id
 WHERE s.flight_id = $1
 ORDER BY s.seat_number;
+

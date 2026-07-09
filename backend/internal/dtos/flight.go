@@ -26,3 +26,7 @@ type FlightResult struct {
 type FlightSearchResponse struct {
 	Data []FlightResult `json:"data"`
 }
+
+type FlightResponse struct {
+	Data FlightResult `json:"data"`
+}

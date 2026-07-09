@@ -13,7 +13,6 @@ import (
 	"github.com/malachi190/flights/internal/db"
 	"github.com/malachi190/flights/internal/dtos"
 	"github.com/malachi190/flights/internal/helpers"
-	"github.com/malachi190/flights/internal/logger"
 )
 
 type Service struct {
@@ -82,7 +81,7 @@ func (s *Service) Create(ctx context.Context, userID string, req *dtos.CreateBoo
 
 	lockedSeats := make([]db.Seat, 0, len(seatUUIDs))
 
-	logger.Log.Info().Interface("seatUUIDs", seatUUIDs).Msg("seat UUID logged")
+	// logger.Log.Info().Interface("seatUUIDs", seatUUIDs).Msg("seat UUID logged")
 
 	for _, sID := range seatUUIDs {
 		seatUpdate, err := q.GetSeatByIDForUpdate(ctx, sID)

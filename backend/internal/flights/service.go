@@ -211,6 +211,55 @@ func (s *Service) GetSeatsMap(ctx context.Context, flightID string) (*dtos.SeatM
 	return result, nil
 }
 
+func (s *Service) GetFlightByID(ctx context.Context, flightID string) (*dtos.FlightResponse, error) {
+	flightUUID := convert.StringToUUID(flightID)
+
+	flightRow, err := s.queries.GetFlightByID(ctx, flightUUID)
+
+	if err != nil {
+		return nil, fmt.Errorf("flight not found: %w", err)
+	}
+
+	cabinRows, err := s.queries.GetFlightCabinClasses(ctx, flightUUID)
+
+	if err != nil {
+		return nil, fmt.Errorf("cabin classes: %w", err)
+	}
+
+	// map into response structure
+	var cabinClasses []dtos.CabinClassResult
+
+	for _, c := range cabinRows {
+		price, err := helpers.NumericToFloat64(c.Price)
+
+		if err != nil {
+			return nil, fmt.Errorf("convert price for cabin %s: %w", c.ClassType, err)
+		}
+		cabinClasses = append(cabinClasses, dtos.CabinClassResult{
+			ID:             c.ID.String(),
+			ClassType:      c.ClassType,
+			Price:          price,
+			AvailableSeats: c.AvailableSeats,
+			TotalSeats:     c.TotalSeats,
+		})
+	}
+
+	flight := dtos.FlightResult{
+		ID:               flightRow.ID.String(),
+		FlightNumber:     flightRow.FlightNumber,
+		AirlineCode:      flightRow.AirlineCode,
+		AirlineName:      flightRow.AirlineName.String,
+		DepartureAirport: flightRow.DepartureAirport,
+		ArrivalAirport:   flightRow.ArrivalAirport,
+		DepartureTime:    flightRow.DepartureTime.Time,
+		ArrivalTime:      flightRow.ArrivalTime.Time,
+		Duration:         flightRow.Duration.String,
+		CabinClasses:     cabinClasses,
+	}
+
+	return &dtos.FlightResponse{Data: flight}, nil
+}
+
 func parseSeatRow(seatNumber string) int {
 	var row int
 	fmt.Sscanf(seatNumber, "%d", &row)

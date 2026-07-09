@@ -176,6 +176,8 @@ export default function SearchResultsPage() {
               (c) => c.class_type === cabinClass
             )
 
+            const selectHref = `/dashboard/bookings/new?flightId=${flight.id}&cabinClassId=${cabin?.id || ""}&adults=${adults}`
+
             return (
               <Card
                 key={flight.id}
@@ -250,8 +252,9 @@ export default function SearchResultsPage() {
                       disabled={
                         !cabin || cabin.available_seats < parseInt(adults)
                       }
+                      asChild
                     >
-                      Select
+                      <Link href={selectHref}>Select</Link>
                     </Button>
                   </div>
                 </CardContent>

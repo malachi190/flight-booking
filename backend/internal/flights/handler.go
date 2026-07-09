@@ -24,6 +24,7 @@ func (h *FlightHandler) RegisterRoutes(r *gin.RouterGroup, auth *auth.AuthHandle
 	// protected routes
 	api := r.Use(auth.AuthMiddleware())
 	api.GET("/:id/seats", h.GetSeatMap)
+	api.GET("/:id", h.Flight)
 }
 
 func (h *FlightHandler) Search(ctx *gin.Context) {
@@ -107,4 +108,21 @@ func (h *FlightHandler) GetSeatMap(ctx *gin.Context) {
 		Message: "seats fetched successfully",
 		Data:    seatMap,
 	})
+}
+
+func (h *FlightHandler) Flight(ctx *gin.Context) {
+	flightID := ctx.Param("id")
+
+	flight, err := h.service.GetFlightByID(ctx.Request.Context(), flightID)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"status":  false,
+			"message": "An error occured",
+			"context": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, flight)
 }

@@ -61,13 +61,35 @@ func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Fli
 }
 
 const getFlightByID = `-- name: GetFlightByID :one
-SELECT id, flight_number, airline_code, airline_name, departure_airport, arrival_airport, departure_time, arrival_time, duration, amadeus_id, wakanow_id, created_at, updated_at FROM flights
+SELECT 
+    id,
+    flight_number,
+    airline_code,
+    airline_name,
+    departure_airport,
+    arrival_airport,
+    departure_time,
+    arrival_time,
+    duration
+FROM flights
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetFlightByID(ctx context.Context, id pgtype.UUID) (Flight, error) {
+type GetFlightByIDRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	FlightNumber     string             `json:"flight_number"`
+	AirlineCode      string             `json:"airline_code"`
+	AirlineName      pgtype.Text        `json:"airline_name"`
+	DepartureAirport string             `json:"departure_airport"`
+	ArrivalAirport   string             `json:"arrival_airport"`
+	DepartureTime    pgtype.Timestamptz `json:"departure_time"`
+	ArrivalTime      pgtype.Timestamptz `json:"arrival_time"`
+	Duration         pgtype.Text        `json:"duration"`
+}
+
+func (q *Queries) GetFlightByID(ctx context.Context, id pgtype.UUID) (GetFlightByIDRow, error) {
 	row := q.db.QueryRow(ctx, getFlightByID, id)
-	var i Flight
+	var i GetFlightByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FlightNumber,
@@ -78,10 +100,6 @@ func (q *Queries) GetFlightByID(ctx context.Context, id pgtype.UUID) (Flight, er
 		&i.DepartureTime,
 		&i.ArrivalTime,
 		&i.Duration,
-		&i.AmadeusID,
-		&i.WakanowID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }

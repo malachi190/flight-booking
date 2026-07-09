@@ -23,7 +23,7 @@ type Querier interface {
 	GetBookingByID(ctx context.Context, id pgtype.UUID) (GetBookingByIDRow, error)
 	GetBookingPassengers(ctx context.Context, bookingID pgtype.UUID) ([]GetBookingPassengersRow, error)
 	GetCabinClassByID(ctx context.Context, id pgtype.UUID) (GetCabinClassByIDRow, error)
-	GetFlightByID(ctx context.Context, id pgtype.UUID) (Flight, error)
+	GetFlightByID(ctx context.Context, id pgtype.UUID) (GetFlightByIDRow, error)
 	GetFlightCabinClasses(ctx context.Context, flightID pgtype.UUID) ([]GetFlightCabinClassesRow, error)
 	GetFlightSeats(ctx context.Context, flightID pgtype.UUID) ([]GetFlightSeatsRow, error)
 	GetSeatByIDForUpdate(ctx context.Context, id pgtype.UUID) (GetSeatByIDForUpdateRow, error)
